@@ -33,13 +33,13 @@ const prompt = () => {
     const {choices} = answers;
 
     if (choices === "View all Employees") {
-        viewAllEmployees();
+        viewAllEmp();
     } else if (choices === "Add Employee") {
-        addEmployee();
+        addEmp();
     } else if (choices === "Update Employee Role") {
-        
+        updateEmp();
     } else if (choices === "View All Roles") {
-        
+        viewRoles();
     } else if (choices === "Add Role") {
         
     } else if (choices === "View All Departments") {
@@ -54,7 +54,7 @@ const prompt = () => {
 });
 };
 
-const viewAllEmployees = () => {
+const viewAllEmp = () => {
     let mysql = `SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.name AS "department", roles.salary
                 FROM employee, roles, department
                 WHERE department.id = roles.department_id AND roles.id = employee.role_id`;
@@ -68,7 +68,7 @@ const viewAllEmployees = () => {
     });
 };
 
-const addEmployee = () => {
+const addEmp = () => {
     inquirer.prompt ([
         {
             type: "input",
@@ -133,7 +133,7 @@ const addEmployee = () => {
                     throw err
                 }
             console.log("Employee was successfully added!")
-            viewAllEmployees();    
+            viewAllEmp();    
             });
         });
         }) ;
@@ -141,6 +141,74 @@ const addEmployee = () => {
          });
         });
     };
+
+    const updateEmp = () => {
+        let sql = `SELECT employee.id, employee.first_name, employee.last_name, roles.id AS "role_id"
+                    FROM employee, roles, department WHERE department.id = roles.department_id AND roles.id = employee.role_id`;
+        dbConect.query(sql, (err, res) => {
+        let empArray = [];
+        res.forEach((employee) => {
+            empArray.push(`${employee.first_name} ${employee.last_name}`)
+        });   
+        // });
+
+        let mysql = "SELECT roles.id, roles.title FROM roles";
+        dbConect.query(mysql, (err, res) => {
+        let rolesArray = [];    
+        res.forEach((roles) => {
+            {rolesArray.push(roles.title)}
+        });
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "updEmp",
+                message: "Which employee do you want to update their role?",
+                choices: empArray
+            },
+            {
+                type: "list",
+                name: "newRole",
+                message: "What is their new role?",
+                choices: rolesArray
+            }
+        ])
+        .then((answer) => {
+            let newRole, empID;
+            res.forEach((roles) => {
+                if(answer.newRole === roles.title){
+                    newRole = roles.id
+                }
+            });
+            res.forEach((employee) => {
+                if(answer.updateEmp === `${employee.first_name} ${employee.last_name}`) {
+                    empID = employee.id;
+                }
+            });
+    
+        let sql = "UPDATE employee SET employee.role_id = ? WHERE employee.id =?";
+        dbConect.query(sql, [newRole, empID], (err) => {
+            console.log("Updated Employee's Role!");
+            prompt();
+        })     
+    
+        })    
+        });
+    });
+  };
+
+  const viewRoles = () => {
+    const sql = `SELECT roles.id, roles.title, department.name AS department
+                FROM roles INNER JOIN department on roles.department_id = department.id`;
+    dbConect.query(sql, (err, res) => {
+        if(err) {
+            throw err
+        }
+        res.forEach((role) => {
+        console.log(role.title)
+        })
+        prompt();
+    })
+  }
 
 
 
