@@ -41,11 +41,11 @@ const prompt = () => {
     } else if (choices === "View All Roles") {
         viewRoles();
     } else if (choices === "Add Role") {
-        
+        addRole();
     } else if (choices === "View All Departments") {
-        
+        viewDPT();
     } else if (choices === "Add Department") {
-        
+        addDPT();
     } else if (choices === "Quit") {
         dbConect.end();
     } else {
@@ -207,8 +207,103 @@ const addEmp = () => {
         console.log(role.title)
         })
         prompt();
-    })
-  }
+    });
+  };
 
+  const addRole = () => {
+    const sql = `SELECT * FROM department`;
+    dbConect.query(sql, (err, res) => {
+        const deptArray = [];
+        res.forEach((department) =>{deptArray.push(department.name);});
+        deptArray.push("Create Department");
+        inquirer.prompt([
+            {
+               type: "list",
+               name: "dptName",
+               message: "Which department does this role reside in?",
+               choices:  deptArray
+            
+            }
+        ])
+        .then((answer) => {
+            if(answer.dptName === "Create Department") {
+                this.addDPT();
+            } else {
+                addRoleResume();
+            }
+        });
+        
+        const addRoleResume = (dptData) => {
+        inquirer.prompt([
+            {
+                type: "input",
+                name: "newRole",
+                message: "What is the name of the new Role?",
+                validate: (answer) => {
+                    if(answer === "") {
+                        return "Please add a name to the new role."
+                    }
+                }
+            },
+            {
+                type: "input",
+                name: "salary",
+                message: "What is the salary of this role?",
+                validate: (answer) => {
+                    if(isNaN(answer)) {
+                        return "Please enter the salary of this role."
+                    }
+                }
+            }
+        ])
+        .then((answer) => {
+            const newRole = answer.newRole;
+            let dptID;
+
+            res.forEach((department) => {
+                if (dptData.dptName === department.name) {dptID = department.id}
+            });
+            let sql = `INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`;
+            let x = [newRole, answer.salary, dptID];
+            
+            dbConect.query(sql, x, (err) => {
+                if(err) {
+                    throw err
+                }
+                console.log("Created role succesfully!");
+                viewRoles();
+            });
+        });
+        };
+      });
+  };
+
+  const viewDPT = () => {
+    const sql = `SELECT department.id AS id, department.name AS department FROM department`;
+    dbConect.query(sql, (err, res) => {
+        console.log(res)
+    });
+  };
+
+  const addDPT = () => {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "newDPT",
+            message: "What is the name of this new department?",
+            validate: (answer) => {
+                if(answer === ""){
+                    return "Please enter a valid name for the department."
+                }
+            }
+        },     
+    ])
+    .then((answer) => {
+        let sql = `INSERT INTO department (name) VALUES (?)`;
+        dbConect.query(sql, (err, res) => {
+            console.log(answer.newDPT + `was succesfully added!`)
+        });
+    });
+  };
 
 
