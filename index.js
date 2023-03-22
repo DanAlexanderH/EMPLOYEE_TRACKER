@@ -273,6 +273,7 @@ const addEmp = () => {
                 }
                 console.log("Created role succesfully!");
                 viewRoles();
+                prompt();
             });
         });
         };
@@ -283,6 +284,7 @@ const addEmp = () => {
     const sql = `SELECT department.id AS id, department.name AS department FROM department`;
     dbConect.query(sql, (err, res) => {
         console.log(res)
+        prompt();
     });
   };
 
@@ -304,7 +306,8 @@ const addEmp = () => {
         dbConect.query(sql, answer.newDPT, (err, res) => {
             console.log(answer.newDPT + ` was succesfully added!`)
         });
-        viewDPT()
+        viewDPT();
+        prompt();
     });
   };
 
