@@ -229,7 +229,7 @@ const addEmp = () => {
             if(answer.dptName === "Create Department") {
                 this.addDPT();
             } else {
-                addRoleResume();
+                addRoleResume(answer);
             }
         });
         
@@ -239,21 +239,21 @@ const addEmp = () => {
                 type: "input",
                 name: "newRole",
                 message: "What is the name of the new Role?",
-                validate: (answer) => {
-                    if(answer === "") {
-                        return "Please add a name to the new role."
-                    }
-                }
+                // validate: (answer) => {
+                //     if(answer === "") {
+                //         return "Please add a name to the new role."
+                //     }
+                // }
             },
             {
                 type: "input",
                 name: "salary",
                 message: "What is the salary of this role?",
-                validate: (answer) => {
-                    if(isNaN(answer)) {
-                        return "Please enter the salary of this role."
-                    }
-                }
+                // validate: (answer) => {
+                //     if(isNaN(answer)) {
+                //         return "Please enter the salary of this role."
+                //     }
+                // }
             }
         ])
         .then((answer) => {
@@ -265,6 +265,7 @@ const addEmp = () => {
             });
             let sql = `INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`;
             let x = [newRole, answer.salary, dptID];
+            console.log(dptID)
             
             dbConect.query(sql, x, (err) => {
                 if(err) {
@@ -291,18 +292,19 @@ const addEmp = () => {
             type: "input",
             name: "newDPT",
             message: "What is the name of this new department?",
-            validate: (answer) => {
-                if(answer === ""){
-                    return "Please enter a valid name for the department."
-                }
-            }
+            // validate: (answer) => {
+            //     if(answer === ""){
+            //         return "Please enter a valid name for the department."
+            //     }
+            // }
         },     
     ])
     .then((answer) => {
         let sql = `INSERT INTO department (name) VALUES (?)`;
-        dbConect.query(sql, (err, res) => {
-            console.log(answer.newDPT + `was succesfully added!`)
+        dbConect.query(sql, answer.newDPT, (err, res) => {
+            console.log(answer.newDPT + ` was succesfully added!`)
         });
+        viewDPT()
     });
   };
 
